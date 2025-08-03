@@ -1,6 +1,6 @@
 spring:
   application:
-    name: ai-code-mother
+    name: ai-code-mother-backend
 server:
   port: 8123
   servlet:
