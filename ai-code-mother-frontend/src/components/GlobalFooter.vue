@@ -2,14 +2,7 @@
   <a-layout-footer class="footer">
     <div class="footer-content">
       <p class="copyright">
-        <a
-          href="https://github.com/AoGuangXiao/ai-code-mother"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="author-link"
-        >
-          created by agx
-        </a>
+        created by agx
       </p>
     </div>
   </a-layout-footer>
