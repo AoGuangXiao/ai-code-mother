@@ -1,3 +1,11 @@
+# 数据库初始化
+
+-- 创建库
+create database if not exists ai_code_mother;
+
+-- 切换库
+use ai_code_mother;
+
 -- 用户表
 create table if not exists user
 (
