@@ -5,7 +5,7 @@ import com.agx.aicodemother.model.vo.LoginUserVO;
 import com.agx.aicodemother.model.vo.UserVO;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.core.service.IService;
-import com.agx.aicodemother.model.User;
+import com.agx.aicodemother.model.entity.User;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.List;
