@@ -1,11 +1,11 @@
 package com.agx.aicodemother.service;
 
-import com.agx.aicodemother.model.User;
+import com.agx.aicodemother.model.entity.User;
 import com.agx.aicodemother.model.dto.app.AppQueryRequest;
 import com.agx.aicodemother.model.vo.AppVO;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.core.service.IService;
-import com.agx.aicodemother.model.App;
+import com.agx.aicodemother.model.entity.App;
 import reactor.core.publisher.Flux;
 
 import java.util.List;

@@ -1,7 +1,7 @@
 package com.agx.aicodemother.mapper;
 
 import com.mybatisflex.core.BaseMapper;
-import com.agx.aicodemother.model.App;
+import com.agx.aicodemother.model.entity.App;
 
 /**
  * 应用 映射层。

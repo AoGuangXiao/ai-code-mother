@@ -3,7 +3,7 @@ package com.agx.aicodemother.aop;
 import com.agx.aicodemother.annotation.AuthCheck;
 import com.agx.aicodemother.exception.BusinessException;
 import com.agx.aicodemother.exception.ErrorCode;
-import com.agx.aicodemother.model.User;
+import com.agx.aicodemother.model.entity.User;
 import com.agx.aicodemother.model.enums.UserRoleEnum;
 import com.agx.aicodemother.service.UserService;
 import jakarta.annotation.Resource;

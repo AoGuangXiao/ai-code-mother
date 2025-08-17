@@ -1,4 +1,4 @@
-package com.agx.aicodemother.model;
+package com.agx.aicodemother.model.entity;
 
 import com.mybatisflex.annotation.Column;
 import com.mybatisflex.annotation.Id;
@@ -16,7 +16,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * 应用 实体类。
+ * 用户 实体类。
  *
  * @author agx
  */
@@ -24,8 +24,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table("app")
-public class App implements Serializable {
+@Table("user")
+public class User implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
@@ -37,50 +37,40 @@ public class App implements Serializable {
     private Long id;
 
     /**
-     * 应用名称
+     * 账号
      */
-    @Column("appName")
-    private String appName;
+    @Column("userAccount")
+    private String userAccount;
 
     /**
-     * 应用封面
+     * 密码
      */
-    private String cover;
+    @Column("userPassword")
+    private String userPassword;
 
     /**
-     * 应用初始化的 prompt
+     * 用户昵称
      */
-    @Column("initPrompt")
-    private String initPrompt;
+    @Column("userName")
+    private String userName;
 
     /**
-     * 代码生成类型（枚举）
+     * 用户头像
      */
-    @Column("codeGenType")
-    private String codeGenType;
+    @Column("userAvatar")
+    private String userAvatar;
 
     /**
-     * 部署标识
+     * 用户简介
      */
-    @Column("deployKey")
-    private String deployKey;
+    @Column("userProfile")
+    private String userProfile;
 
     /**
-     * 部署时间
+     * 用户角色：user/admin
      */
-    @Column("deployedTime")
-    private LocalDateTime deployedTime;
-
-    /**
-     * 优先级
-     */
-    private Integer priority;
-
-    /**
-     * 创建用户id
-     */
-    @Column("userId")
-    private Long userId;
+    @Column("userRole")
+    private String userRole;
 
     /**
      * 编辑时间
