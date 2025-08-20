@@ -69,7 +69,7 @@ public class AiCodeGeneratorServiceFactory {
                 .builder()
                 .id(appId)
                 .chatMemoryStore(redisChatMemoryStore)
-                .maxMessages(20)
+                .maxMessages(50)   // 一次工具调用也算一次记忆，maxMessages得设置得大一点，不然模型会失忆一直循环调用工具
                 .build();
         // 从数据库加载历史对话到缓存中
         chatHistoryService.loadChatHistoryToMemory(appId, chatMemory, 20);
