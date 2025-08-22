@@ -92,7 +92,7 @@ public class AiCodeGeneratorServiceFactory {
         // 从数据库加载历史对话到缓存中
         chatHistoryService.loadChatHistoryToMemory(appId, chatMemory, 20);
         // 根据代码生成类型选择不同的模型配置
-        return switch(codeGenType) {
+        return switch (codeGenType) {
             // Vue 项目生成使用推理模型
             case VUE_PROJECT -> AiServices.builder(AiCodeGeneratorService.class)
                     .streamingChatModel(reasoningStreamingChatModel)
