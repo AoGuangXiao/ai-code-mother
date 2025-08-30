@@ -1,5 +1,6 @@
 package com.agx.aicodemother.service;
 
+import com.agx.aicodemother.model.dto.app.AppAddRequest;
 import com.agx.aicodemother.model.entity.User;
 import com.agx.aicodemother.model.dto.app.AppQueryRequest;
 import com.agx.aicodemother.model.vo.AppVO;
@@ -33,6 +34,14 @@ public interface AppService extends IService<App> {
      * @return
      */
     String deployApp(Long appId, User loginUser);
+
+    /**
+     * 创建应用
+     * @param appAddRequest
+     * @param loginUser
+     * @return
+     */
+    Long createApp(AppAddRequest appAddRequest, User loginUser);
 
     /**
      * 异步生成应用截图并更新封面

@@ -142,6 +142,10 @@ declare namespace API {
     id?: number
   }
 
+  type downloadAppCodeParams = {
+    appId: number
+  }
+
   type getAppVOByIdByAdminParams = {
     id: number
   }
@@ -161,7 +165,7 @@ declare namespace API {
   type listAppChatHistoryParams = {
     appId: number
     pageSize?: number
-    lastCreateTime: string
+    lastCreateTime?: string
   }
 
   type LoginUserVO = {

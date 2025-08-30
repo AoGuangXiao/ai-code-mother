@@ -5,6 +5,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
+import com.agx.aicodemother.ai.AiCodeGenTypeRoutingService;
 import com.agx.aicodemother.constant.AppConstant;
 import com.agx.aicodemother.core.AiCodeGeneratorFacade;
 import com.agx.aicodemother.core.builder.VueProjectBuilder;
@@ -12,6 +13,7 @@ import com.agx.aicodemother.core.handler.StreamHandlerExecutor;
 import com.agx.aicodemother.exception.BusinessException;
 import com.agx.aicodemother.exception.ErrorCode;
 import com.agx.aicodemother.exception.ThrowUtils;
+import com.agx.aicodemother.model.dto.app.AppAddRequest;
 import com.agx.aicodemother.model.entity.User;
 import com.agx.aicodemother.model.dto.app.AppQueryRequest;
 import com.agx.aicodemother.model.enums.ChatHistoryMessageTypeEnum;
@@ -61,6 +63,8 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App>  implements AppS
     private VueProjectBuilder vueProjectBuilder;
     @Resource
     private ScreenshotService screenshotService;
+    @Resource
+    private AiCodeGenTypeRoutingService aiCodeGenTypeRoutingService;
 
     @Override
     public Flux<String> chatToGenCode(Long appId, String message, User loginUser) {
@@ -147,6 +151,27 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App>  implements AppS
         // 11. 异步生成截图并更新应用封面
         generateAppScreenshotAsync(appId, appDeployUrl);
         return appDeployUrl;
+    }
+
+    @Override
+    public Long createApp(AppAddRequest appAddRequest, User loginUser) {
+        // 参数校验
+        String initPrompt = appAddRequest.getInitPrompt();
+        ThrowUtils.throwIf(StrUtil.isBlank(initPrompt), ErrorCode.PARAMS_ERROR, "初始化 prompt 不能为空");
+        // 构造入库对象
+        App app = new App();
+        BeanUtil.copyProperties(appAddRequest, app);
+        app.setUserId(loginUser.getId());
+        // 应用名称暂时为 initPrompt 前 12 位
+        app.setAppName(initPrompt.substring(0, Math.min(initPrompt.length(), 12)));
+        // 调用 AI 智能路由服务获取代码生成类型
+        CodeGenTypeEnum selectedCodeGenTypeEnum = aiCodeGenTypeRoutingService.routeCodeGenType(initPrompt);
+        app.setCodeGenType(selectedCodeGenTypeEnum.getValue());
+        // 插入数据库
+        boolean result = this.save(app);
+        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
+        log.info("应用创建成功, ID: {}, 类型: {}", app.getId(), selectedCodeGenTypeEnum.getValue());
+        return app.getId();
     }
 
     @Override
