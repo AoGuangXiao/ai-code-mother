@@ -139,6 +139,10 @@ public class ChatHistoryServiceImpl extends ServiceImpl<ChatHistoryMapper, ChatH
         Long id = chatHistoryQueryRequest.getId();
         String message = chatHistoryQueryRequest.getMessage();
         String messageType = chatHistoryQueryRequest.getMessageType();
+        // 处理 messageType 的空字符串问题
+        if (StrUtil.isEmpty(messageType)) {
+            messageType = null;
+        }
         Long appId = chatHistoryQueryRequest.getAppId();
         Long userId = chatHistoryQueryRequest.getUserId();
         LocalDateTime lastCreateTime = chatHistoryQueryRequest.getLastCreateTime();
