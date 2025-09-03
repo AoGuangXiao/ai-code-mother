@@ -1,6 +1,6 @@
 package com.agx.aicodemother.ai;
 
-import com.agx.aicodemother.ai.tools.FileWriteTool;
+import com.agx.aicodemother.ai.tools.*;
 import com.agx.aicodemother.exception.BusinessException;
 import com.agx.aicodemother.exception.ErrorCode;
 import com.agx.aicodemother.model.enums.CodeGenTypeEnum;
@@ -37,6 +37,8 @@ public class AiCodeGeneratorServiceFactory {
     private RedisChatMemoryStore redisChatMemoryStore;
     @Resource
     private ChatHistoryService chatHistoryService;
+    @Resource
+    private ToolManager toolManager;
 
     /**
      * AI 服务实例缓存
@@ -97,7 +99,7 @@ public class AiCodeGeneratorServiceFactory {
             case VUE_PROJECT -> AiServices.builder(AiCodeGeneratorService.class)
                     .streamingChatModel(reasoningStreamingChatModel)
                     .chatMemoryProvider(memoryId -> chatMemory)
-                    .tools(new FileWriteTool())
+                    .tools(toolManager.getAllTools())
                     .hallucinatedToolNameStrategy(toolExecutionRequest -> ToolExecutionResultMessage.from(
                             toolExecutionRequest, "Error: there is no tool called " + toolExecutionRequest.name()
                     ))
