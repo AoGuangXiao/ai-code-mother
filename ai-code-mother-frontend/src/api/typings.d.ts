@@ -212,6 +212,10 @@ declare namespace API {
     deployKey: string
   }
 
+  type stopSseParams = {
+    appId: number
+  }
+
   type User = {
     id?: number
     userAccount?: string

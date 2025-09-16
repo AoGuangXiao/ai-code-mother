@@ -132,14 +132,25 @@
             />
             <div class="input-actions">
               <a-button
+                v-if="!isGenerating"
                 type="primary"
                 @click="sendMessage"
-                :loading="isGenerating"
                 :disabled="!isOwner"
               >
                 <template #icon>
                   <SendOutlined />
                 </template>
+              </a-button>
+              <a-button
+                v-else
+                type="danger"
+                @click="stopResponse"
+                :loading="isStopping"
+              >
+                <template #icon>
+                  <StopOutlined />
+                </template>
+                停止输出
               </a-button>
             </div>
           </div>
@@ -218,6 +229,7 @@ import {
   getAppVoById,
   deployApp as deployAppApi,
   deleteApp as deleteAppApi,
+  stopSse,
 } from '@/api/appController'
 import { listAppChatHistory } from '@/api/chatHistoryController'
 import { CodeGenTypeEnum, formatCodeGenType } from '@/utils/codeGenTypes'
@@ -237,6 +249,7 @@ import {
   InfoCircleOutlined,
   DownloadOutlined,
   EditOutlined,
+  StopOutlined,
 } from '@ant-design/icons-vue'
 
 const route = useRoute()
@@ -477,8 +490,7 @@ const sendMessage = async () => {
 
 // 生成代码 - 使用 EventSource 处理流式响应
 const generateCode = async (userMessage: string, aiMessageIndex: number) => {
-  let eventSource: EventSource | null = null
-  let streamCompleted = false
+  eventSource.value = null  // 重置 EventSource
 
   try {
     // 获取 axios 配置的 baseURL
@@ -493,15 +505,15 @@ const generateCode = async (userMessage: string, aiMessageIndex: number) => {
     const url = `${baseURL}/app/chat/gen/code?${params}`
 
     // 创建 EventSource 连接
-    eventSource = new EventSource(url, {
+    eventSource.value = new EventSource(url, {
       withCredentials: true,
     })
 
     let fullContent = ''
 
     // 处理接收到的消息
-    eventSource.onmessage = function (event) {
-      if (streamCompleted) return
+    eventSource.value.onmessage = function (event) {
+      if (isStopping.value) return  // 如果正在停止，不再处理新消息
 
       try {
         // 解析JSON包装的数据
@@ -522,12 +534,12 @@ const generateCode = async (userMessage: string, aiMessageIndex: number) => {
     }
 
     // 处理done事件
-    eventSource.addEventListener('done', function () {
-      if (streamCompleted) return
+    eventSource.value.addEventListener('done', function () {
+      if (isStopping.value) return  // 如果正在停止，不执行完成逻辑
 
-      streamCompleted = true
       isGenerating.value = false
-      eventSource?.close()
+      eventSource.value?.close()
+      eventSource.value = null
 
       // 延迟更新预览，确保后端已完成处理
       setTimeout(async () => {
@@ -537,13 +549,14 @@ const generateCode = async (userMessage: string, aiMessageIndex: number) => {
     })
 
     // 处理错误
-    eventSource.onerror = function () {
-      if (streamCompleted || !isGenerating.value) return
+    eventSource.value.onerror = function () {
+      if (!isGenerating.value || isStopping.value) return  // 如果正在停止或已停止，不处理错误
+
       // 检查是否是正常的连接关闭
-      if (eventSource?.readyState === EventSource.CONNECTING) {
-        streamCompleted = true
+      if (eventSource.value?.readyState === EventSource.CONNECTING) {
         isGenerating.value = false
-        eventSource?.close()
+        eventSource.value?.close()
+        eventSource.value = null
 
         setTimeout(async () => {
           await fetchAppInfo()
@@ -559,6 +572,39 @@ const generateCode = async (userMessage: string, aiMessageIndex: number) => {
   }
 }
 
+
+// 停止响应函数
+const stopResponse = async () => {
+  if (eventSource.value) {
+    isStopping.value = true
+    try {
+      // 调用后端停止输出的接口
+      await stopSse({
+        appId: appId.value as number,
+      })
+
+      // 关闭 EventSource 连接
+      eventSource.value.close()
+      eventSource.value = null
+
+      // 更新 UI
+      const lastAiMessageIndex = messages.value.length - 1
+      if (messages.value[lastAiMessageIndex]?.type === 'ai') {
+        messages.value[lastAiMessageIndex].loading = false
+      }
+
+      isGenerating.value = false
+      isStopping.value = false
+
+      message.success('已停止响应')
+    } catch (error) {
+      console.error('停止响应失败：', error)
+      message.error('停止响应失败，请重试')
+      isStopping.value = false
+    }
+  }
+}
+
 // 错误处理函数
 const handleError = (error: unknown, aiMessageIndex: number) => {
   console.error('生成代码失败：', error)
@@ -567,6 +613,10 @@ const handleError = (error: unknown, aiMessageIndex: number) => {
   message.error('生成失败，请重试')
   isGenerating.value = false
 }
+
+// 终止 AI 响应输出
+const isStopping = ref(false)
+const eventSource = ref<EventSource | null>(null)
 
 // 更新预览
 const updatePreview = () => {
@@ -742,7 +792,9 @@ onMounted(() => {
 
 // 清理资源
 onUnmounted(() => {
-  // EventSource 会在组件卸载时自动清理
+  if (eventSource.value) {
+    eventSource.value.close()
+  }
 })
 </script>
 

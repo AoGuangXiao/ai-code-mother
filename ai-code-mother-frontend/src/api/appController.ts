@@ -169,6 +169,21 @@ export async function listMyAppVoByPage(
   })
 }
 
+/** 此处后端没有提供注释 POST /app/stop */
+export async function stopSse(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.stopSseParams,
+  options?: { [key: string]: any }
+) {
+  return request<any>('/app/stop', {
+    method: 'POST',
+    params: {
+      ...params,
+    },
+    ...(options || {}),
+  })
+}
+
 /** 此处后端没有提供注释 POST /app/update */
 export async function updateApp(body: API.AppUpdateRequest, options?: { [key: string]: any }) {
   return request<API.BaseResponseBoolean>('/app/update', {

@@ -30,11 +30,13 @@ import com.agx.aicodemother.model.entity.App;
 import com.agx.aicodemother.service.AppService;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.Sinks;
 
 import java.io.File;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 应用 控制层。
@@ -51,6 +53,21 @@ public class AppController {
     private UserService userService;
     @Resource
     private ProjectDownloadService projectDownloadService;
+
+    // 保存用户对应的 stop sink
+    private final Map<Long, Sinks.Many<String>> stopSinks = new ConcurrentHashMap<>();
+
+    /**
+     * 停止大模型输出
+     * @param appId
+     */
+    @PostMapping("/stop")
+    public void stopSse(@RequestParam Long appId) {
+        Sinks.Many<String> sink = stopSinks.get(appId);
+        if (sink != null) {
+            sink.tryEmitNext("stop");
+        }
+    }
 
     /**
      * 应用聊天生成代码(流式 SSE)
@@ -70,8 +87,12 @@ public class AppController {
         User loginUser = userService.getLoginUser(request);
         // 调用服务生成代码(流式)
         Flux<String> contentFlux = appService.chatToGenCode(appId, message, loginUser);
+        // 创建一个停止信号
+        Sinks.Many<String> stopSink = Sinks.many().multicast().onBackpressureBuffer();
+        stopSinks.put(appId, stopSink);
         // 转换为 ServerSentEvent 格式
         return contentFlux
+                .takeUntilOther(stopSink.asFlux())
                 .map(chunk -> {
                     // 将内容包装成 JSON 对象
                     Map<String, String> wrapper = Map.of("d", chunk);
@@ -85,7 +106,8 @@ public class AppController {
                         ServerSentEvent.<String>builder()
                                 .event("done")
                                 .build()
-                ));
+                ))
+                .doFinally(signalType -> stopSinks.remove(appId));
     }
 
     /**
