@@ -1,6 +1,7 @@
 package com.agx.aicodemother.langgraph4j.state;
 
 import com.agx.aicodemother.langgraph4j.model.ImageResource;
+import com.agx.aicodemother.langgraph4j.model.QualityResult;
 import com.agx.aicodemother.model.enums.CodeGenTypeEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.bsc.langgraph4j.prebuilt.MessagesState;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
@@ -71,6 +73,13 @@ public class WorkflowContext implements Serializable {
      */
     private String errorMessage;
 
+    /**
+     * 质量检查结果
+     */
+    private QualityResult qualityResult;
+
+
+    @Serial
     private static final long serialVersionUID = 1L;
 
     // ========== 上下文操作方法 ==========
