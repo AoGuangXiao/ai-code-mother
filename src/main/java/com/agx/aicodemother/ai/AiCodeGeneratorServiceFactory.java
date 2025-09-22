@@ -3,6 +3,7 @@ package com.agx.aicodemother.ai;
 import com.agx.aicodemother.ai.tools.*;
 import com.agx.aicodemother.exception.BusinessException;
 import com.agx.aicodemother.exception.ErrorCode;
+import com.agx.aicodemother.langgraph4j.utils.SpringContextUtil;
 import com.agx.aicodemother.model.enums.CodeGenTypeEnum;
 import com.agx.aicodemother.service.ChatHistoryOriginalService;
 import com.agx.aicodemother.service.ChatHistoryService;
@@ -28,12 +29,8 @@ import java.time.Duration;
 @Slf4j
 public class AiCodeGeneratorServiceFactory {
 
-    @Resource
+    @Resource(name = "openAiChatModel")
     private ChatModel chatModel;
-    @Resource
-    private StreamingChatModel openAiStreamingChatModel;
-    @Resource
-    private StreamingChatModel reasoningStreamingChatModel;
     @Resource
     private RedisChatMemoryStore redisChatMemoryStore;
     @Resource
@@ -98,6 +95,8 @@ public class AiCodeGeneratorServiceFactory {
             case VUE_PROJECT -> {
                 // 从数据库加载历史对话到缓存中，由于多了工具调用相关信息，加载的最大数量稍微多一些
                 chatHistoryOriginalService.loadOriginalChatHistoryToMemory(appId, chatMemory, 50);
+                // 使用多例模式的 StreamingChatModel 解决并发问题
+                StreamingChatModel reasoningStreamingChatModel = SpringContextUtil.getBean("reasoningStreamingChatModelPrototype", StreamingChatModel.class);
                 // Vue 项目生成使用推理模型
                 aiCodeGeneratorService = AiServices.builder(AiCodeGeneratorService.class)
                     .streamingChatModel(reasoningStreamingChatModel)
@@ -111,6 +110,8 @@ public class AiCodeGeneratorServiceFactory {
             case HTML, MULTI_FILE -> {
                 // 从数据库加载历史对话到缓存中
                 chatHistoryService.loadChatHistoryToMemory(appId, chatMemory, 20);
+                // 使用多例模式的 StreamingChatModel 解决并发问题
+                StreamingChatModel openAiStreamingChatModel = SpringContextUtil.getBean("streamingChatModelPrototype", StreamingChatModel.class);
                 // HTML 和多文件生成模式使用默认模型
                 aiCodeGeneratorService = AiServices.builder(AiCodeGeneratorService.class)
                     .chatModel(chatModel)
