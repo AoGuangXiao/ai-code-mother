@@ -1,5 +1,6 @@
 package com.agx.aicodemother.ai;
 
+import com.agx.aicodemother.ai.guardrail.PromptSafetyInputGuardrail;
 import com.agx.aicodemother.ai.tools.*;
 import com.agx.aicodemother.exception.BusinessException;
 import com.agx.aicodemother.exception.ErrorCode;
@@ -105,6 +106,7 @@ public class AiCodeGeneratorServiceFactory {
                     .hallucinatedToolNameStrategy(toolExecutionRequest -> ToolExecutionResultMessage.from(
                             toolExecutionRequest, "Error: there is no tool called " + toolExecutionRequest.name()
                     ))
+                    .inputGuardrails(new PromptSafetyInputGuardrail()) // 添加输入护轨
                     .build();
             }
             case HTML, MULTI_FILE -> {
@@ -117,6 +119,7 @@ public class AiCodeGeneratorServiceFactory {
                     .chatModel(chatModel)
                     .streamingChatModel(openAiStreamingChatModel)
                     .chatMemory(chatMemory)
+                    .inputGuardrails(new PromptSafetyInputGuardrail()) // 添加输入护轨
                     .build();
             }
             default -> throw new BusinessException(ErrorCode.SYSTEM_ERROR, "不支持的代码生成类型: " + codeGenType.getValue());
