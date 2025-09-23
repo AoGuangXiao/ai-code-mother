@@ -548,6 +548,31 @@ const generateCode = async (userMessage: string, aiMessageIndex: number) => {
       }, 1000)
     })
 
+    // 处理business-error事件（后端限流等错误）
+    eventSource.value.addEventListener('business-error', function (event: MessageEvent) {
+      if (isStopping.value) return
+
+      try {
+        const errorData = JSON.parse(event.data)
+        console.error('SSE业务错误事件:', errorData)
+
+        // 显示具体的错误信息
+        const errorMessage = errorData.message || '生成过程中出现错误'
+        messages.value[aiMessageIndex].content = `❌ ${errorMessage}`
+        messages.value[aiMessageIndex].loading = false
+        message.error(errorMessage)
+
+        // 更新状态
+        isGenerating.value = false
+        isStopping.value = true
+        eventSource.value?.close()
+        eventSource.value = null
+      } catch (parseError) {
+        console.error('解析错误事件失败:', parseError, '原始数据:', event.data)
+        handleError(new Error('服务器返回错误'), aiMessageIndex)
+      }
+    })
+
     // 处理错误
     eventSource.value.onerror = function () {
       if (!isGenerating.value || isStopping.value) return  // 如果正在停止或已停止，不处理错误

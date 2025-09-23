@@ -14,8 +14,9 @@ import com.agx.aicodemother.exception.ErrorCode;
 import com.agx.aicodemother.exception.ThrowUtils;
 import com.agx.aicodemother.model.entity.User;
 import com.agx.aicodemother.model.dto.app.*;
-import com.agx.aicodemother.model.enums.CodeGenTypeEnum;
 import com.agx.aicodemother.model.vo.AppVO;
+import com.agx.aicodemother.ratelimit.annotation.RateLimit;
+import com.agx.aicodemother.ratelimit.enums.RateLimitType;
 import com.agx.aicodemother.service.ProjectDownloadService;
 import com.agx.aicodemother.service.UserService;
 import com.mybatisflex.core.paginate.Page;
@@ -78,6 +79,7 @@ public class AppController {
      * @return
      */
     @GetMapping(value = "/chat/gen/code", produces = MediaType.TEXT_EVENT_STREAM_VALUE) // 声明为 SSE 流式返回，使用 get 请求便于前端使用 EventSource 对接
+    @RateLimit(limitType = RateLimitType.USER, rate = 5, rateInterval = 60, message = "AI 对话请求过于频繁，请稍后再试")
     public Flux<ServerSentEvent<String>> chatToGenCode(@RequestParam Long appId,
                                       @RequestParam String message,
                                       HttpServletRequest request) {
