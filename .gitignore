@@ -3,6 +3,7 @@ tmp
 application-local.yml
 application-prod.yml
 application-ai.yml
+application-cos.yml
 
 HELP.md
 target/
