@@ -1,4 +1,4 @@
-package com.agx.aicodemother.model.dto.chathistory;
+package com.agx.aicodemother.model.dto.chatHistory;
 
 import com.agx.aicodemother.common.PageRequest;
 import lombok.Data;
